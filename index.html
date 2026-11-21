@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cycle Care</title>
+<meta name="description" content="A private, shared cycle companion for couples. Data stays on this device.">
+<meta name="theme-color" content="#f7f1ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16131a" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Cycle Care">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+:root{
+  --bg:#f7f1ee; --bg2:#efe6f0;
+  --card:rgba(255,255,255,.72); --card-solid:#fff; --stroke:rgba(60,40,60,.10);
+  --text:#231a26; --muted:#6d6170; --accent:#b4476b; --accent-ink:#fff;
+  --menstrual:#d9546f; --follicular:#4f9e8a; --ovulatory:#d9a23a; --luteal:#8b72c9; --pre:#5f7fb8;
+  --shadow:0 1px 2px rgba(40,20,40,.06),0 8px 28px rgba(40,20,40,.08);
+  --radius:22px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#16131a; --bg2:#221a2a;
+    --card:rgba(40,33,46,.72); --card-solid:#2a2230; --stroke:rgba(255,255,255,.09);
+    --text:#f4eef6; --muted:#ae9fb4; --accent:#f08aa8; --accent-ink:#2a0d18;
+    --menstrual:#f07a91; --follicular:#6cc4ad; --ovulatory:#f2c063; --luteal:#ad97ee; --pre:#8aa6dc;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35);
+  }
+}
+@media (prefers-contrast: more){
+  :root{--card:var(--card-solid); --stroke:currentColor; --muted:var(--text)}
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+/* -apple-system-body makes all rem sizes follow the iPhone's Dynamic Type text size */
+html{font:-apple-system-body;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+@supports not (font:-apple-system-body){html{font-size:17px}}
+body{margin:0;color:var(--text);background:linear-gradient(160deg,var(--bg) 0%,var(--bg2) 100%) fixed;min-height:100dvh;
+  padding:env(safe-area-inset-top) 0 calc(84px + env(safe-area-inset-bottom));line-height:1.4}
+button,input,select,textarea{font:inherit;color:inherit}
+h1{font-size:2rem;letter-spacing:-.02em;margin:.6rem 0 .2rem;font-weight:700}
+h2{font-size:1.15rem;margin:0 0 .5rem;font-weight:650}
+p{margin:.3rem 0}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px}
+.sub{color:var(--muted);font-size:.9rem}
+.card{background:var(--card);-webkit-backdrop-filter:blur(20px) saturate(1.4);backdrop-filter:blur(20px) saturate(1.4);
+  border:1px solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin:12px 0}
+.row{display:flex;align-items:center;gap:12px}
+.spread{justify-content:space-between}
+.btn{appearance:none;border:0;border-radius:14px;padding:.75rem 1rem;min-height:44px;background:var(--accent);color:var(--accent-ink);font-weight:600;cursor:pointer}
+.btn.secondary{background:var(--card-solid);color:var(--text);border:1px solid var(--stroke)}
+.btn.ghost{background:transparent;color:var(--accent);padding:.5rem .6rem}
+.btn.danger{background:transparent;color:#c0392b;border:1px solid currentColor}
+.btn.block{width:100%}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+.btns .btn{flex:1 1 140px}
+.pill{display:inline-flex;align-items:center;gap:.35em;border-radius:999px;padding:.2rem .65rem;font-size:.85rem;font-weight:600;background:var(--card-solid);border:1px solid var(--stroke)}
+.guess{font-size:.78rem;font-weight:600;color:var(--muted);border:1px dashed var(--muted);border-radius:6px;padding:0 .35rem;margin-left:.3rem;white-space:nowrap}
+/* Ring */
+.ringbox{position:relative;width:min(78vw,300px);aspect-ratio:1;margin:6px auto 2px}
+.ringbox svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ringcenter{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:18%}
+.ringcenter .big{font-size:2.6rem;font-weight:750;letter-spacing:-.03em;line-height:1}
+.ringcenter .moon{font-size:1.6rem;line-height:1.2}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:center;font-size:.8rem;color:var(--muted);margin-top:4px}
+.legend span{display:inline-flex;align-items:center;gap:4px}
+.sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.ideas{margin:0;padding:0;list-style:none}
+.ideas li{display:flex;gap:10px;padding:.55rem 0;border-top:1px solid var(--stroke)}
+.ideas li:first-child{border-top:0}
+.ideas .ico{font-size:1.2rem;width:1.6rem;text-align:center;flex:none}
+.up{display:flex;gap:12px;padding:.6rem 0;border-top:1px solid var(--stroke)}
+.up:first-child{border-top:0}
+.up .date{flex:none;width:3.4rem;text-align:center;border-radius:12px;background:var(--card-solid);border:1px solid var(--stroke);padding:.2rem 0;font-size:.8rem;color:var(--muted)}
+.up .date b{display:block;font-size:1.2rem;color:var(--text)}
+/* Calendar */
+.calhead{display:flex;align-items:center;justify-content:space-between}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px}
+.dow{text-align:center;font-size:.72rem;color:var(--muted);font-weight:600;padding:2px 0}
+.day{position:relative;aspect-ratio:1;border:0;border-radius:12px;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.9rem;padding:0;min-height:40px;cursor:pointer}
+.day .g{font-size:.62rem;line-height:1;opacity:.95}
+.day.out{opacity:.35}
+.day.est{background-image:repeating-linear-gradient(135deg,transparent 0 5px,rgba(255,255,255,.35) 5px 7px)}
+.day.today{outline:2.5px solid var(--text);outline-offset:-2px;font-weight:800}
+.day .dot{position:absolute;bottom:4px;width:5px;height:5px;border-radius:50%;background:var(--text)}
+.ph-menstrual{background-color:color-mix(in srgb,var(--menstrual) 30%,transparent)}
+.ph-follicular{background-color:color-mix(in srgb,var(--follicular) 22%,transparent)}
+.ph-ovulatory{background-color:color-mix(in srgb,var(--ovulatory) 32%,transparent)}
+.ph-luteal{background-color:color-mix(in srgb,var(--luteal) 20%,transparent)}
+.ph-pre{background-color:color-mix(in srgb,var(--pre) 24%,transparent)}
+/* Log */
+.entry{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:transparent;border:0;border-top:1px solid var(--stroke);padding:.7rem 0;min-height:44px;cursor:pointer}
+.entry:first-child{border-top:0}
+.entry .badge{flex:none;width:2.2rem;height:2.2rem;border-radius:50%;display:grid;place-items:center;font-size:1.1rem;background:var(--card-solid);border:1px solid var(--stroke)}
+.entry .meta{flex:1}
+.entry .chev{color:var(--muted)}
+/* Tabs */
+nav.tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom));width:min(calc(100% - 24px),520px);
+  display:flex;justify-content:space-around;padding:6px;border-radius:26px;background:var(--card);-webkit-backdrop-filter:blur(24px) saturate(1.6);backdrop-filter:blur(24px) saturate(1.6);border:1px solid var(--stroke);box-shadow:var(--shadow);z-index:5}
+nav.tabs button{flex:1;border:0;background:transparent;border-radius:20px;padding:6px 0;min-height:48px;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:.7rem;color:var(--muted);cursor:pointer}
+nav.tabs button .ti{font-size:1.25rem;line-height:1}
+nav.tabs button[aria-selected="true"]{color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);font-weight:650}
+/* Sheet */
+.scrim{position:fixed;inset:0;background:rgba(10,5,15,.35);display:none;z-index:9}
+.scrim.open{display:block}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-height:92dvh;overflow:auto;background:var(--card-solid);border-radius:26px 26px 0 0;
+  padding:10px 16px calc(20px + env(safe-area-inset-bottom));z-index:10;transform:translateY(105%);visibility:hidden;transition:transform .32s cubic-bezier(.2,.9,.25,1),visibility 0s linear .32s;max-width:600px;margin:0 auto}
+.sheet.open{transform:none;visibility:visible;transition:transform .32s cubic-bezier(.2,.9,.25,1)}
+.grabber{width:38px;height:5px;border-radius:3px;background:var(--stroke);margin:0 auto 10px;background:color-mix(in srgb,var(--muted) 40%,transparent)}
+label.f{display:block;margin:12px 0 4px;font-weight:600;font-size:.9rem}
+.field{width:100%;padding:.7rem .8rem;border-radius:12px;border:1px solid var(--stroke);background:var(--bg);min-height:44px}
+textarea.field{min-height:9rem;font-family:ui-monospace,Menlo,monospace;font-size:.85rem}
+.seg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.seg button{border:1px solid var(--stroke);background:var(--bg);border-radius:12px;min-height:48px;padding:.5rem;cursor:pointer;text-align:left}
+.seg button[aria-pressed="true"]{border:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--bg))}
+.toggle{display:flex;align-items:flex-start;gap:12px;margin:12px 0}
+.toggle input{width:24px;height:24px;flex:none;accent-color:var(--accent);margin-top:2px}
+.note{font-size:.85rem;color:var(--muted)}
+.hidden{display:none!important}
+.toast{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top));transform:translate(-50%,-150%);background:var(--text);color:var(--bg);padding:.6rem 1rem;border-radius:14px;font-weight:600;z-index:20;transition:transform .3s;max-width:90vw}
+.toast.show{transform:translate(-50%,0)}
+.onb{min-height:calc(100dvh - 120px);display:flex;flex-direction:column;justify-content:center}
+.hero{font-size:3.4rem;text-align:center;margin:0}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<!-- Onboarding -->
+<main id="onboarding" class="wrap hidden" aria-label="Welcome">
+  <div class="onb">
+    <p class="hero" aria-hidden="true">🌒🌕🌘</p>
+    <h1 style="text-align:center">Cycle Care</h1>
+    <p class="sub" style="text-align:center">A gentle companion for being a more thoughtful partner, made to be used <b>openly, together</b>.</p>
+    <div class="card">
+      <label class="f" for="onbName">Her first name</label>
+      <input id="onbName" class="field" autocomplete="off" placeholder="e.g. Anna">
+      <div class="toggle">
+        <input type="checkbox" id="onbConsent">
+        <label for="onbConsent">We've talked about it and she's happy for me to use this. <span class="note">Cycle data is personal health information about her. The app only works well if she's in on it, and she can correct the dates.</span></label>
+      </div>
+      <p class="note">🔒 Everything stays on this iPhone. No account, no server, no analytics.</p>
+    </div>
+    <div class="btns">
+      <button class="btn" id="onbImport">Paste my notes</button>
+      <button class="btn secondary" id="onbEmpty">Start empty</button>
+    </div>
+  </div>
+</main>
+
+<!-- Today -->
+<main id="tab-today" class="wrap tab hidden" aria-labelledby="h-today">
+  <div class="row spread"><h1 id="h-today">Today</h1><span class="sub" id="todayDate"></span></div>
+  <section class="card" aria-label="Cycle overview">
+    <div class="ringbox" id="ring"></div>
+    <div class="legend" id="legend"></div>
+  </section>
+  <section class="card" id="nextCard"></section>
+  <div class="btns">
+    <button class="btn" id="qPeriod">🌑 Period started today</button>
+    <button class="btn secondary" id="qAdd">＋ Add entry</button>
+  </div>
+  <section class="card"><h2 id="ideasTitle">Ideas for this phase</h2><ul class="ideas" id="ideas"></ul></section>
+  <section class="card"><div class="row spread"><h2>Coming up</h2><button class="btn ghost" data-goto="settings">Reminders ›</button></div><div id="upcoming"></div></section>
+  <p class="note" style="text-align:center;margin:18px 8px">Estimates come from the dates you've logged. Every body is different and cycles vary, so ask her rather than assume. Not a contraception or medical tool.</p>
+</main>
+
+<!-- Calendar -->
+<main id="tab-calendar" class="wrap tab hidden" aria-labelledby="h-cal">
+  <h1 id="h-cal">Calendar</h1>
+  <section class="card">
+    <div class="calhead">
+      <button class="btn ghost" id="calPrev" aria-label="Previous month">‹</button>
+      <h2 id="calTitle" style="margin:0"></h2>
+      <button class="btn ghost" id="calNext" aria-label="Next month">›</button>
+    </div>
+    <div class="grid" id="calGrid" role="grid"></div>
+    <div class="legend" id="legend2" style="margin-top:12px"></div>
+    <p class="note" style="text-align:center;margin-top:8px">Striped days are estimates. A dot means something was logged.</p>
+  </section>
+</main>
+
+<!-- Log -->
+<main id="tab-log" class="wrap tab hidden" aria-labelledby="h-log">
+  <div class="row spread"><h1 id="h-log">Log</h1><button class="btn" id="logAdd" aria-label="Add entry">＋ Add</button></div>
+  <section class="card" id="stats"></section>
+  <section class="card"><div id="logList"></div></section>
+  <button class="btn secondary block" id="logImport">Paste notes to import</button>
+</main>
+
+<!-- Settings -->
+<main id="tab-settings" class="wrap tab hidden" aria-labelledby="h-set">
+  <h1 id="h-set">Together</h1>
+  <section class="card">
+    <h2>🔔 Reminders</h2>
+    <p class="sub">iPhone web apps can't schedule notifications on their own, so Cycle Care puts gentle reminders into your Calendar. Calendar then notifies you at the time you choose.</p>
+    <label class="f" for="setHour">Remind me at</label>
+    <input type="time" id="setHour" class="field">
+    <div class="toggle"><input type="checkbox" id="setDiscreet"><label for="setDiscreet">Discreet titles <span class="note">Lock-screen text says e.g. "🌕 Date night" instead of mentioning her period.</span></label></div>
+    <button class="btn block" id="exportIcs">Add next 3 cycles to Calendar</button>
+    <p class="note">Tip: import into a separate calendar called "Cycle Care". When dates change, delete that calendar and add again.</p>
+    <div id="notifList" style="margin-top:8px"></div>
+  </section>
+  <section class="card">
+    <h2>💞 Share with her</h2>
+    <p class="sub">Show her what you see, let her correct it, or give her a copy for her own phone.</p>
+    <div class="btns">
+      <button class="btn secondary" id="shareSummary">Share summary</button>
+      <button class="btn secondary" id="shareBackup">Send data file</button>
+    </div>
+    <p class="note">She can open the data file in Cycle Care on her phone via "Restore from file" below.</p>
+  </section>
+  <section class="card">
+    <h2>⚙️ Estimates</h2>
+    <label class="f" for="setName">Her name</label><input id="setName" class="field">
+    <label class="f" for="setPeriod">Typical period length (days)</label><input id="setPeriod" class="field" type="number" min="2" max="10" inputmode="numeric">
+    <label class="f" for="setLuteal">Days from ovulation to period</label><input id="setLuteal" class="field" type="number" min="9" max="17" inputmode="numeric">
+    <p class="note">Usually 12–14. Default 14 is a textbook guess; her logged ovulations refine it automatically.</p>
+    <label class="f" for="setCycle">Cycle length override (days)</label><input id="setCycle" class="field" type="number" min="20" max="45" inputmode="numeric" placeholder="Auto">
+  </section>
+  <section class="card">
+    <h2>🔒 Your data</h2>
+    <p class="sub">Stored only in this browser on this phone. Deleting the app from your Home Screen deletes the data, so keep a backup.</p>
+    <div class="btns">
+      <button class="btn secondary" id="backup">Save backup file</button>
+      <button class="btn secondary" id="restoreBtn">Restore from file</button>
+    </div>
+    <input type="file" id="restoreFile" accept=".json,application/json" class="hidden">
+    <button class="btn danger block" id="wipe" style="margin-top:10px">Erase everything</button>
+  </section>
+</main>
+
+<nav class="tabs hidden" id="tabs" role="tablist" aria-label="Sections">
+  <button role="tab" data-tab="today"><span class="ti" aria-hidden="true">◐</span>Today</button>
+  <button role="tab" data-tab="calendar"><span class="ti" aria-hidden="true">▦</span>Calendar</button>
+  <button role="tab" data-tab="log"><span class="ti" aria-hidden="true">☰</span>Log</button>
+  <button role="tab" data-tab="settings"><span class="ti" aria-hidden="true">♡</span>Together</button>
+</nav>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"><div class="grabber"></div><div id="sheetBody"></div></div>
+
+<script>
+"use strict";
+/* ---------- Date helpers (all dates are local calendar days, stored as YYYY-MM-DD) ---------- */
+const DAY=86400000;
+const toN=s=>{const[y,m,d]=s.split('-').map(Number);return Math.round(Date.UTC(y,m-1,d)/DAY)};
+const toS=n=>new Date(n*DAY).toISOString().slice(0,10);
+const todayS=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+const fmt=(s,o={day:'numeric',month:'short'})=>new Date(toN(s)*DAY).toLocaleDateString(undefined,{...o,timeZone:'UTC'});
+const fmtLong=s=>fmt(s,{weekday:'long',day:'numeric',month:'long'});
+const uid=()=>Math.random().toString(36).slice(2,10);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- Storage ---------- */
+const KEY='cyclecare.v1';
+const DEFAULTS={entries:[],settings:{name:'',periodLength:5,luteal:14,cycleOverride:null,reminderTime:'09:00',discreet:true,consent:false},onboarded:false};
+let S;
+function load(){try{S=JSON.parse(localStorage.getItem(KEY))||structuredClone(DEFAULTS)}catch(e){S=structuredClone(DEFAULTS)}S.settings={...DEFAULTS.settings,...S.settings}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Could not save on this device')}}
+const her=()=>S.settings.name.trim()||'her';
+const Her=()=>S.settings.name.trim()||'She';
+
+/* ---------- Phases ---------- */
+const PH={
+  menstrual:{name:'Period',moon:'🌑',color:'--menstrual'},
+  follicular:{name:'Follicular',moon:'🌒',color:'--follicular'},
+  ovulatory:{name:'Fertile window',moon:'🌕',color:'--ovulatory'},
+  luteal:{name:'Luteal',moon:'🌖',color:'--luteal'},
+  pre:{name:'Pre-period',moon:'🌘',color:'--pre'}
+};
+function phaseOf(day,L,P,lut){
+  const O=L-lut+1; // cycle day of ovulation (1-based): next period starts lut days after it
+  if(day<=P) return 'menstrual';
+  if(day>=O-3&&day<=O+1) return 'ovulatory';
+  if(day<O-3) return 'follicular';
+  if(day>L-5) return 'pre';
+  return 'luteal';
+}
+
+/* ---------- Model: turn entries into cycles + estimates ---------- */
+function model(){
+  const st=S.settings, P=+st.periodLength||5;
+  const E=[...S.entries].sort((a,b)=>a.date<b.date?-1:1);
+  const starts=[];
+  const addStart=(n,src)=>{const near=starts.find(s=>Math.abs(s.n-n)<=3);if(near){if(src==='logged'&&near.src!=='logged'){near.n=n;near.src='logged'}return}starts.push({n,src})};
+  E.filter(e=>e.type==='period').forEach(e=>addStart(toN(e.date)-((e.day||1)-1),(e.day||1)===1?'logged':'inferred'));
+  E.filter(e=>e.type==='day').forEach(e=>addStart(toN(e.date)-(e.day-1),'inferred'));
+  starts.sort((a,b)=>a.n-b.n);
+  // ovulation groups (consecutive logged days count as one event; first day used)
+  const ovs=[];E.filter(e=>e.type==='ovulation').map(e=>toN(e.date)).sort((a,b)=>a-b).forEach(n=>{const l=ovs[ovs.length-1];if(l&&n-l.last<=2){l.last=n}else ovs.push({n,last:n})});
+  // cycle lengths from consecutive starts
+  const lens=[];for(let i=1;i<starts.length;i++){const d=starts[i].n-starts[i-1].n;if(d>=20&&d<=45)lens.push(d)}
+  // learn luteal length from ovulation -> next start pairs
+  const luts=[];ovs.forEach(o=>{const nx=starts.find(s=>s.n>o.n);if(nx){const d=nx.n-o.n;if(d>=9&&d<=17)luts.push(d)}});
+  const lut=luts.length?Math.round(luts.reduce((a,b)=>a+b)/luts.length):(+st.luteal||14);
+  const recent=lens.slice(-6);
+  const mean=recent.length?recent.reduce((a,b)=>a+b)/recent.length:28;
+  const sd=recent.length>1?Math.sqrt(recent.reduce((a,b)=>a+(b-mean)**2,0)/(recent.length-1)):3;
+  const avg=st.cycleOverride?+st.cycleOverride:Math.round(mean);
+  const T=toN(todayS());
+  const cycles=[]; // {start,len,est,startEst}
+  for(let i=0;i<starts.length;i++){
+    const nx=starts[i+1];
+    let len=nx?nx.n-starts[i].n:null;
+    if(len&&len>45){ // a gap: missing data. Treat as unknown span
+      cycles.push({start:starts[i].n,len:avg,gapAfter:true,startEst:starts[i].src!=='logged'});continue}
+    cycles.push({start:starts[i].n,len,startEst:starts[i].src!=='logged'});
+  }
+  let cur=null, basis='', confidence='low';
+  const last=cycles[cycles.length-1];
+  const lastOv=ovs[ovs.length-1];
+  if(lastOv && (!last||lastOv.n>last.start+10) && T-lastOv.n<=lut+10){
+    // Recent ovulation is the best clue we have: next period ≈ ovulation + luteal length
+    const next=lastOv.n+lut;
+    const ovDay=avg-lut;
+    let start=lastOv.n-(ovDay-1), startEst=true;
+    if(last&&lastOv.n-last.start<=40&&lastOv.n-last.start>=8){start=last.start;startEst=last.startEst;cycles.pop()}
+    cur={start,len:next-start,startEst,nextEst:true,fromOv:true};
+    basis=`ovulation logged on ${fmt(toS(lastOv.n))} + about ${lut} days`;
+    confidence='medium';
+  } else if(last){
+    let start=last.start, k=0;
+    if(last.len==null||last.gapAfter){while(start+avg<=T){start+=avg;k++}}
+    if(k===0&&last.len==null){cycles.pop();cur={start,len:avg,startEst:last.startEst,nextEst:true}}
+    else {cur={start,len:avg,startEst:true,nextEst:true}}
+    basis=`average cycle of ${avg} days`+(k>0?` (no period logged for ${k} cycle${k>1?'s':''}, so this is a projection)`:'');
+    confidence=k>0?'low':(recent.length>=3?'medium':'low');
+  }
+  if(cur){cycles.forEach(c=>{if(c.len==null)c.len=cur.start-c.start})}
+  const future=[];
+  if(cur){let s=cur.start+cur.len;for(let i=0;i<4;i++){future.push({start:s,len:avg,startEst:true,future:true});s+=avg}}
+  const all=[...cycles.filter(c=>!cur||c.start<cur.start),...(cur?[cur]:[]),...future];
+  const spread=Math.max(2,Math.round(sd||2));
+  return {starts,ovs,lens,mean,sd,avg,lut,luts,P,cycles:all,cur,future,basis,confidence,spread,T};
+}
+function dayInfo(M,n){
+  for(const c of M.cycles){
+    if(n>=c.start&&n<c.start+c.len){const day=n-c.start+1;return{c,day,phase:phaseOf(day,c.len,M.P,M.lut),est:!!(c.future||c.nextEst&&n>=M.T||c.startEst&&n<M.T&&false)}}
+  }
+  return null;
+}
+
+/* ---------- Copy: ideas & reminders (warm, non-reductive, always "may") ---------- */
+const IDEAS={
+  menstrual:[['🫖','Offer comfort without making a fuss: tea, a hot-water bottle, her favourite snack.'],['🛋️','Suggest a cosy night in, and let her choose the film or the takeaway.'],['🧺','Quietly take a chore or two off her list.'],['💬','Ask "What would feel good today?" Some days she may want company, some days space.']],
+  follicular:[['🥾','Energy often picks up now. Suggest something active or new together.'],['🗓️','Good week to plan ahead: book a trip, a concert or a dinner.'],['💡','Ask about her goals and plans. This can be a great time for bigger conversations.']],
+  ovulatory:[['🍷','Classic date-night window: many people feel most social and confident around mid-cycle.'],['💐','Small romantic gestures land well: flowers, a note, a surprise plan.'],['⚠️','The fertile window is only an estimate. Never rely on this app for contraception.']],
+  luteal:[['🍲','Lean towards relaxed plans, good food and earlier nights.'],['🤝','Pick up a little extra at home, without making it a thing.'],['🎧','Plan calmer dates: a walk, a cooking night, a series together.']],
+  pre:[['💛','Some people feel tired, crampy or more sensitive before a period. Extra patience goes a long way.'],['🍫','Stock up on comforts she likes before her period starts.'],['🚫','Skip "is it hormones?" Just be kind and listen.'],['🗓️','Keep the next few days flexible and avoid scheduling big stressful things.']]
+};
+function reminderPlan(M){
+  if(!M.cur) return [];
+  const out=[], T=M.T, P=M.P;
+  const cyc=[M.cur,...M.future.slice(0,2)];
+  cyc.forEach((c,i)=>{
+    const L=c.len,O=L-M.lut+1,s=c.start;
+    const nextStart=s+L;
+    const add=(n,kind,title,discreet,body)=>{if(n>=T)out.push({n,kind,title,discreet,body})};
+    if(i>0||s>=T){
+      add(s-2,'heads-up','Period likely in about 2 days','🌘 Comfort prep',`${Her()}'s period may start around ${fmt(toS(s))} (estimate). Good moment to restock her favourites and keep the next evenings flexible. Ask what would feel good.`);
+      add(s,'start','Period may start today','🌑 Gentle check-in',`If it has started, tap "Period started" in Cycle Care so estimates stay accurate. A low-key "Anything I can take off your plate today?" goes a long way.`);
+      add(s+1,'cosy','Cosy-night idea','🌑 Cosy night',`Offer a slow evening: her favourite takeaway, a film she picks, a hot-water bottle. Let ${her()} decide. Some days she may want company, some days space.`);
+    }
+    add(s+P+1,'energy','Energy often lifts now','🌒 Plan something new',`For many people energy and curiosity rise after a period. A good week to suggest something new together: a hike, a class, a day trip.`);
+    add(s+O-3,'date','Date-night window','🌕 Date night',`Around mid-cycle many people feel especially social and confident. Plan a proper date in the next few days. (Estimate. Not a fertility or contraception guide.)`);
+    add(s+O+3,'slow','Slower days ahead','🌖 Easy evenings',`Energy can dip in the second half of the cycle. Lean towards relaxed plans, good food and early nights, and pick up a few extra chores.`);
+    add(nextStart-5,'kind','Extra-kindness days','🌘 Extra kindness',`The days before a period can bring tiredness, cramps or a shorter fuse for some people. Be patient, keep big stressful plans off the calendar, and just be there.`);
+  });
+  const seen=new Set();
+  return out.sort((a,b)=>a.n-b.n).filter(r=>{const k=r.n+r.kind;if(seen.has(k))return false;seen.add(k);return true});
+}
+
+/* ---------- Notes parser: "18.3. P Tag 1", "6.3. Tag 18", "20.11. ovulation", "2026-03-18 period" ---------- */
+function parseNotes(text,year){
+  const res=[],bad=[];
+  text.split(/\n|;/).map(l=>l.trim()).filter(Boolean).forEach(line=>{
+    let m=line.match(/^(\d{4})-(\d{1,2})-(\d{1,2})\s*(.*)$/), y,mo,d,rest;
+    if(m){[,y,mo,d,rest]=m}else{m=line.match(/^(\d{1,2})[./](\d{1,2})[./]?(\d{2,4})?\.?\s*(.*)$/);if(!m){bad.push(line);return}[,d,mo,y,rest]=m;y=y?(y.length===2?'20'+y:y):year}
+    y=+y;mo=+mo;d=+d;if(mo<1||mo>12||d<1||d>31){bad.push(line);return}
+    const date=`${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const low=rest.toLowerCase();
+    const dm=low.match(/(?:tag|day|zyklustag|cd)\s*(\d{1,2})/);
+    const isP=/^p\b|period|periode|mens|blutung/.test(low);
+    const isOv=/ovul|eisprung|ov\b/.test(low);
+    let note=rest.replace(/^p\b/i,'').replace(/(?:tag|day|zyklustag|cd)\s*\d{1,2}/i,'').replace(/ovulation|eisprung|period[e]?/ig,'').trim();
+    let e;
+    if(isOv) e={type:'ovulation'};
+    else if(isP) e={type:'period',day:dm?+dm[1]:1};
+    else if(dm) e={type:'day',day:+dm[1]};
+    else e={type:'note'};
+    if(e.type==='period'&&e.day>1){e={type:'day',day:e.day};note=('period '+note).trim()}
+    res.push({id:uid(),date,...e,note});
+  });
+  return{res,bad};
+}
+
+/* ---------- UI helpers ---------- */
+const $=s=>document.querySelector(s);
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),2400)}
+function legend(el){el.innerHTML=Object.values(PH).map(p=>`<span><i class="sw" style="background:var(${p.color})"></i>${p.moon} ${p.name}</span>`).join('')}
+const typeLabel=e=>e.type==='period'?'Period started':e.type==='ovulation'?'Ovulation':e.type==='day'?`Cycle day ${e.day}`:'Note';
+const typeIcon=e=>({period:'🌑',ovulation:'🌕',day:'📍',note:'✏️'})[e.type];
+
+let tab='today', calMonth=null;
+function show(t){tab=t;document.querySelectorAll('.tab').forEach(m=>m.classList.toggle('hidden',m.id!=='tab-'+t));document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));render();window.scrollTo(0,0)}
+
+function render(){
+  if(!S.onboarded){$('#onboarding').classList.remove('hidden');$('#tabs').classList.add('hidden');document.querySelectorAll('.tab').forEach(m=>m.classList.add('hidden'));return}
+  $('#onboarding').classList.add('hidden');$('#tabs').classList.remove('hidden');
+  const M=model();
+  if(tab==='today')renderToday(M);
+  if(tab==='calendar')renderCal(M);
+  if(tab==='log')renderLog(M);
+  if(tab==='settings')renderSettings(M);
+}
+
+function renderToday(M){
+  $('#todayDate').textContent=fmtLong(todayS());
+  legend($('#legend'));
+  const ring=$('#ring'), c=M.cur;
+  if(!c){ring.innerHTML=`<div class="ringcenter" style="position:static;padding:30px 10px"><div class="moon">🌙</div><p>Log a period start to see her cycle.</p></div>`;$('#nextCard').innerHTML='';$('#ideas').innerHTML='';$('#upcoming').innerHTML='';return}
+  const info=dayInfo(M,M.T)||{day:M.T-c.start+1,phase:'pre',c};
+  const L=c.len, r=44, C=2*Math.PI*r;
+  let segs='';
+  for(let d=1;d<=L;d++){const ph=phaseOf(d,L,M.P,M.lut);const a=C/L;segs+=`<circle cx="50" cy="50" r="${r}" fill="none" stroke="var(${PH[ph].color})" stroke-width="9" stroke-dasharray="${Math.max(a-.9,.5)} ${C}" stroke-dashoffset="${-a*(d-1)}" opacity="${d<info.day?1:.45}"/>`}
+  const ang=((info.day-.5)/L)*2*Math.PI;
+  const mx=50+r*Math.cos(ang),my=50+r*Math.sin(ang);
+  const p=PH[info.phase];
+  ring.innerHTML=`<svg viewBox="0 0 100 100" aria-hidden="true">${segs}<circle cx="${mx}" cy="${my}" r="6.2" fill="var(--card-solid)" stroke="var(--text)" stroke-width="2"/></svg>
+   <div class="ringcenter" role="img" aria-label="Cycle day ${info.day} of about ${L}. Phase: ${p.name}. ${c.startEst?'Estimated.':''}">
+     <div class="moon" aria-hidden="true">${p.moon}</div><div class="sub">Cycle day${c.startEst?'<span class="guess">guess</span>':''}</div>
+     <div class="big">${info.day}</div><div class="sub">of ~${L}</div><div style="font-weight:650;margin-top:4px">${p.name}</div></div>`;
+  const next=c.start+c.len, until=next-M.T;
+  const spread=c.fromOv?2:M.spread;
+  $('#nextCard').innerHTML=`<div class="row spread"><div><div class="sub">Next period, roughly</div><div style="font-size:1.5rem;font-weight:700">${fmt(toS(next),{weekday:'short',day:'numeric',month:'short'})}<span class="guess">estimate</span></div>
+    <div class="sub">${until>0?`in about ${until} day${until>1?'s':''}`:until===0?'around today':`${-until} day${until<-1?'s':''} later than expected. Did it start?`} · likely between ${fmt(toS(next-spread))} and ${fmt(toS(next+spread))}</div></div></div>
+    <p class="note" style="margin-top:8px">Based on ${esc(M.basis)}. ${M.lens.length} cycles logged, average ${M.mean.toFixed(1)} days (range ${Math.min(...M.lens)||'–'}–${Math.max(...M.lens)||'–'}).${c.startEst?' The start of this cycle is a guess: if you know when her last period began, add it in Log.':''}</p>`;
+  $('#ideasTitle').textContent=`Ideas for the ${p.name.toLowerCase()} phase`;
+  $('#ideas').innerHTML=IDEAS[info.phase].map(([i,t])=>`<li><span class="ico" aria-hidden="true">${i}</span><span>${esc(t)}</span></li>`).join('');
+  const R=reminderPlan(M).slice(0,4);
+  $('#upcoming').innerHTML=R.length?R.map(upRow).join(''):'<p class="sub">Nothing scheduled yet.</p>';
+}
+const upRow=r=>{const s=toS(r.n);return `<div class="up"><div class="date">${fmt(s,{month:'short',timeZone:'UTC'})}<b>${fmt(s,{day:'numeric',timeZone:'UTC'})}</b></div><div><div style="font-weight:650">${esc(r.title)}</div><div class="sub">${esc(r.body)}</div></div></div>`};
+
+function renderCal(M){
+  legend($('#legend2'));
+  if(!calMonth){const t=todayS();calMonth=t.slice(0,7)}
+  const [y,m]=calMonth.split('-').map(Number);
+  $('#calTitle').textContent=new Date(Date.UTC(y,m-1,1)).toLocaleDateString(undefined,{month:'long',year:'numeric',timeZone:'UTC'});
+  const first=Math.round(Date.UTC(y,m-1,1)/DAY);
+  const dow=(new Date(first*DAY).getUTCDay()+6)%7; // Monday first
+  const logged=new Map();S.entries.forEach(e=>{logged.set(e.date,[...(logged.get(e.date)||[]),e])});
+  let h=['Mo','Tu','We','Th','Fr','Sa','Su'].map(d=>`<div class="dow" aria-hidden="true">${d}</div>`).join('');
+  for(let i=0;i<42;i++){
+    const n=first-dow+i, s=toS(n), inM=+s.slice(5,7)===m;
+    if(i>=35&&!inM&&i%7===0)break;
+    const info=dayInfo(M,n);
+    const ph=info?info.phase:null;
+    const est=info&&(info.c.future||(info.c===M.cur&&(n>=M.T||info.c.startEst)));
+    const ent=logged.get(s);
+    const lbl=`${fmtLong(s)}${ph?`, ${PH[ph].name}${est?' (estimate)':''}, cycle day ${info.day}`:''}${ent?', '+ent.map(typeLabel).join(', '):''}`;
+    h+=`<button class="day ${ph?'ph-'+ph:''} ${inM?'':'out'} ${est?'est':''} ${n===M.T?'today':''}" data-date="${s}" aria-label="${esc(lbl)}">${+s.slice(8)}${ph?`<span class="g" aria-hidden="true">${PH[ph].moon}</span>`:''}${ent?'<span class="dot"></span>':''}</button>`;
+  }
+  $('#calGrid').innerHTML=h;
+}
+
+function renderLog(M){
+  const list=[...S.entries].sort((a,b)=>a.date<b.date?1:-1);
+  $('#stats').innerHTML=M.lens.length?`<div class="row spread" style="text-align:center">
+    <div><div style="font-size:1.6rem;font-weight:700">${M.mean.toFixed(1)}</div><div class="sub">avg cycle</div></div>
+    <div><div style="font-size:1.6rem;font-weight:700">${Math.min(...M.lens)}–${Math.max(...M.lens)}</div><div class="sub">range</div></div>
+    <div><div style="font-size:1.6rem;font-weight:700">${M.lens.length}</div><div class="sub">cycles</div></div></div>
+    <p class="note" style="margin-top:8px">Period starts are worked out from "cycle day" entries where needed. Gaps over 45 days are skipped as missing data.</p>`:'<p class="sub">Log at least two period starts to see her average cycle.</p>';
+  $('#logList').innerHTML=list.length?list.map(e=>`<button class="entry" data-id="${e.id}"><span class="badge" aria-hidden="true">${typeIcon(e)}</span><span class="meta"><b>${typeLabel(e)}</b>${e.note?` · ${esc(e.note)}`:''}<br><span class="sub">${fmtLong(e.date)}</span></span><span class="chev" aria-hidden="true">›</span></button>`).join(''):'<p class="sub">No entries yet.</p>';
+}
+
+function renderSettings(M){
+  const st=S.settings;
+  $('#setHour').value=st.reminderTime;$('#setDiscreet').checked=st.discreet;$('#setName').value=st.name;
+  $('#setPeriod').value=st.periodLength;$('#setLuteal').value=st.luteal;$('#setCycle').value=st.cycleOverride||'';
+  $('#setCycle').placeholder=`Auto (${M.avg})`;
+  if(M.luts.length)$('#setLuteal').placeholder=`Learned: ${M.lut}`;
+  const R=reminderPlan(M);
+  $('#notifList').innerHTML=`<p class="sub" style="margin-top:10px"><b>${R.length} reminders</b> over the next ~3 cycles:</p>`+R.slice(0,7).map(upRow).join('')+(R.length>7?`<p class="sub">…and ${R.length-7} more.</p>`:'');
+}
+
+/* ---------- Sheet (add / edit) ---------- */
+function openSheet(html){$('#sheetBody').innerHTML=html;$('#sheet').classList.add('open');$('#scrim').classList.add('open');setTimeout(()=>{const f=$('#sheet').querySelector('[autofocus],input,button');f&&f.focus()},50)}
+function closeSheet(){$('#sheet').classList.remove('open');$('#scrim').classList.remove('open')}
+$('#scrim').onclick=closeSheet;
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+
+function editEntry(id,presetDate){
+  const e=id?S.entries.find(x=>x.id===id):{type:'period',date:presetDate||todayS(),day:1,note:''};
+  let type=e.type;
+  const types=[['period','🌑 Period started'],['ovulation','🌕 Ovulation'],['day','📍 Cycle day…'],['note','✏️ Note']];
+  openSheet(`<div class="row spread"><button class="btn ghost" id="eCancel">Cancel</button><h2 id="sheetTitle" style="margin:0">${id?'Edit entry':'New entry'}</h2><button class="btn ghost" id="eSave" style="font-weight:700">Save</button></div>
+    <label class="f" for="eDate">Date</label><input type="date" id="eDate" class="field" value="${e.date}">
+    <span class="f" style="display:block;margin:12px 0 6px;font-weight:600;font-size:.9rem">What happened?</span>
+    <div class="seg" id="eType">${types.map(([k,l])=>`<button type="button" data-k="${k}" aria-pressed="${k===type}">${l}</button>`).join('')}</div>
+    <div id="eDayWrap" class="${type==='day'?'':'hidden'}"><label class="f" for="eDay">Cycle day number</label><input type="number" id="eDay" class="field" min="1" max="60" inputmode="numeric" value="${e.day||''}" placeholder="e.g. 18"><p class="note">Use this when you know which day of her cycle it is but not when it started.</p></div>
+    <label class="f" for="eNote">Note (optional)</label><input id="eNote" class="field" value="${esc(e.note||'')}" placeholder="e.g. 🔥, tired, great date">
+    ${id?'<button class="btn danger block" id="eDel" style="margin-top:18px">Delete entry</button>':''}`);
+  $('#eType').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;type=b.dataset.k;$('#eType').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));$('#eDayWrap').classList.toggle('hidden',type!=='day')};
+  $('#eCancel').onclick=closeSheet;
+  $('#eSave').onclick=()=>{
+    const date=$('#eDate').value;if(!date){toast('Pick a date');return}
+    const day=+$('#eDay').value;if(type==='day'&&!(day>=1)){toast('Enter the cycle day number');return}
+    const rec={id:e.id||uid(),date,type,note:$('#eNote').value.trim(),...(type==='day'?{day}:type==='period'?{day:1}:{})};
+    if(id)S.entries=S.entries.map(x=>x.id===id?rec:x);else S.entries.push(rec);
+    save();closeSheet();render();toast(id?'Updated':'Added');
+  };
+  if(id)$('#eDel').onclick=()=>{S.entries=S.entries.filter(x=>x.id!==id);save();closeSheet();render();toast('Deleted')};
+}
+
+function dayDetail(s){
+  const M=model(), info=dayInfo(M,toN(s)), ents=S.entries.filter(e=>e.date===s);
+  openSheet(`<div class="row spread"><h2 id="sheetTitle" style="margin:0">${fmtLong(s)}</h2><button class="btn ghost" id="dClose">Done</button></div>
+   ${info?`<p><span class="pill">${PH[info.phase].moon} ${PH[info.phase].name}</span> <span class="sub">cycle day ${info.day}</span>${info.c.future||info.c.startEst?'<span class="guess">estimate</span>':''}</p>
+   <ul class="ideas">${IDEAS[info.phase].slice(0,2).map(([i,t])=>`<li><span class="ico" aria-hidden="true">${i}</span><span>${esc(t)}</span></li>`).join('')}</ul>`:'<p class="sub">No cycle data around this day.</p>'}
+   <div style="margin-top:8px">${ents.map(e=>`<button class="entry" data-id="${e.id}"><span class="badge" aria-hidden="true">${typeIcon(e)}</span><span class="meta"><b>${typeLabel(e)}</b>${e.note?` · ${esc(e.note)}`:''}</span><span class="chev">Edit ›</span></button>`).join('')}</div>
+   <button class="btn block" id="dAdd" style="margin-top:12px">＋ Add entry on this day</button>`);
+  $('#dClose').onclick=closeSheet;$('#dAdd').onclick=()=>editEntry(null,s);
+  $('#sheetBody').querySelectorAll('.entry').forEach(b=>b.onclick=()=>editEntry(b.dataset.id));
+}
+
+function importSheet(){
+  const y=new Date().getFullYear();
+  openSheet(`<div class="row spread"><button class="btn ghost" id="iCancel">Cancel</button><h2 id="sheetTitle" style="margin:0">Paste notes</h2><button class="btn ghost" id="iGo" style="font-weight:700">Import</button></div>
+   <p class="sub">One entry per line, day.month. Examples:<br><code>18.3. P Tag 1</code> (period started)<br><code>6.3. Tag 18</code> (cycle day 18)<br><code>20.11. ovulation</code></p>
+   <label class="f" for="iYear">Year for dates without a year</label><input id="iYear" class="field" type="number" value="${y}">
+   <label class="f" for="iText">Your notes</label><textarea id="iText" class="field" placeholder="18.3. P Tag 1&#10;15.4. P Tag 1"></textarea>
+   <p class="note">Duplicates (same date and type) are skipped.</p>`);
+  $('#iCancel').onclick=closeSheet;
+  $('#iGo').onclick=()=>{
+    const {res,bad}=parseNotes($('#iText').value,$('#iYear').value);
+    let n=0;res.forEach(r=>{if(!S.entries.some(e=>e.date===r.date&&e.type===r.type&&(e.day||0)===(r.day||0))){S.entries.push(r);n++}});
+    S.onboarded=true;save();closeSheet();show('today');toast(`Imported ${n} entr${n===1?'y':'ies'}${bad.length?`, ${bad.length} line(s) not understood`:''}`);
+  };
+}
+
+/* ---------- Calendar export (.ics) ---------- */
+function icsText(M){
+  const R=reminderPlan(M), st=S.settings, [hh,mm]=st.reminderTime.split(':');
+  const e=s=>s.replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
+  const fold=l=>{const o=[];let cur='';for(const ch of l){if(new TextEncoder().encode(cur+ch).length>73){o.push(cur);cur=' '+ch}else cur+=ch}o.push(cur);return o.join('\r\n')};
+  const stamp=new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z';
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Cycle Care//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:Cycle Care'];
+  R.forEach(r=>{const d=toS(r.n).replace(/-/g,'');const title=st.discreet?r.discreet:r.title;
+    L.push('BEGIN:VEVENT',`UID:cyclecare-${d}-${r.kind}`,`DTSTAMP:${stamp}`,`DTSTART:${d}T${hh}${mm}00`,'DURATION:PT15M',fold(`SUMMARY:${e(title)}`),fold(`DESCRIPTION:${e(r.body+'\n\n(Estimate from Cycle Care. Ask her how she feels.)')}`),'TRANSP:TRANSPARENT','BEGIN:VALARM','ACTION:DISPLAY',fold(`DESCRIPTION:${e(title)}`),'TRIGGER:PT0M','END:VALARM','END:VEVENT')});
+  L.push('END:VCALENDAR');return L.join('\r\n');
+}
+async function shareFile(name,type,text,fallbackTitle){
+  const file=new File([text],name,{type});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:fallbackTitle});return}catch(err){if(err.name==='AbortError')return}}
+  const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
+}
+
+/* ---------- Wiring ---------- */
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>show(b.dataset.tab));
+document.addEventListener('click',ev=>{const g=ev.target.closest('[data-goto]');if(g)show(g.dataset.goto)});
+$('#onbImport').onclick=()=>{if(!$('#onbConsent').checked){toast('Please talk with her first and tick the box');return}S.settings.name=$('#onbName').value.trim();S.settings.consent=true;save();importSheet()};
+$('#onbEmpty').onclick=()=>{if(!$('#onbConsent').checked){toast('Please talk with her first and tick the box');return}S.settings.name=$('#onbName').value.trim();S.settings.consent=true;S.onboarded=true;save();show('today')};
+$('#qPeriod').onclick=()=>{const t=todayS();if(S.entries.some(e=>e.date===t&&e.type==='period')){toast('Already logged for today');return}S.entries.push({id:uid(),date:t,type:'period',day:1,note:''});save();render();toast('Logged. Estimates updated 💛')};
+$('#qAdd').onclick=()=>editEntry();
+$('#logAdd').onclick=()=>editEntry();
+$('#logImport').onclick=importSheet;
+$('#logList').onclick=ev=>{const b=ev.target.closest('.entry');if(b)editEntry(b.dataset.id)};
+$('#calGrid').onclick=ev=>{const b=ev.target.closest('.day');if(b)dayDetail(b.dataset.date)};
+const shiftMonth=k=>{let[y,m]=calMonth.split('-').map(Number);m+=k;if(m<1){m=12;y--}if(m>12){m=1;y++}calMonth=`${y}-${String(m).padStart(2,'0')}`;render()};
+$('#calPrev').onclick=()=>shiftMonth(-1);$('#calNext').onclick=()=>shiftMonth(1);
+let sx=null;$('#calGrid').addEventListener('touchstart',e=>{sx=e.touches[0].clientX},{passive:true});$('#calGrid').addEventListener('touchend',e=>{if(sx==null)return;const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>60)shiftMonth(dx<0?1:-1);sx=null});
+const bindSet=(sel,key,conv)=>$(sel).addEventListener('change',e=>{S.settings[key]=conv(e.target);save();render()});
+bindSet('#setHour','reminderTime',t=>t.value||'09:00');
+bindSet('#setDiscreet','discreet',t=>t.checked);
+bindSet('#setName','name',t=>t.value.trim());
+bindSet('#setPeriod','periodLength',t=>Math.min(10,Math.max(2,+t.value||5)));
+bindSet('#setLuteal','luteal',t=>Math.min(17,Math.max(9,+t.value||14)));
+bindSet('#setCycle','cycleOverride',t=>t.value?Math.min(45,Math.max(20,+t.value)):null);
+$('#exportIcs').onclick=()=>{const M=model();if(!M.cur){toast('Log a period first');return}shareFile('cycle-care-reminders.ics','text/calendar',icsText(M),'Cycle Care reminders')};
+$('#shareSummary').onclick=async()=>{const M=model();if(!M.cur){toast('Nothing to share yet');return}const info=dayInfo(M,M.T);const next=toS(M.cur.start+M.cur.len);
+  const text=`Hey${S.settings.name?' '+S.settings.name:''} 💛 Here's what my cycle app guesses. Tell me what's off!\n\n• Today: cycle day ${info?info.day:'?'} (${info?PH[info.phase].name:'?'})\n• Next period, roughly: ${fmtLong(next)}\n• Average cycle from what I've noted: ${M.mean.toFixed(1)} days\n\nI use it to plan nice things and be a bit more considerate, not to second-guess you.`;
+  if(navigator.share){try{await navigator.share({text})}catch(e){}}else{await navigator.clipboard?.writeText(text);toast('Copied to clipboard')}};
+const backupJSON=()=>JSON.stringify({app:'cyclecare',version:1,exported:new Date().toISOString(),...S},null,2);
+$('#shareBackup').onclick=()=>shareFile('cycle-care-data.json','application/json',backupJSON(),'Cycle Care data');
+$('#backup').onclick=()=>shareFile(`cycle-care-backup-${todayS()}.json`,'application/json',backupJSON(),'Cycle Care backup');
+$('#restoreBtn').onclick=()=>$('#restoreFile').click();
+$('#restoreFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!Array.isArray(d.entries))throw 0;S={entries:d.entries,settings:{...DEFAULTS.settings,...d.settings},onboarded:true};save();show('today');toast(`Restored ${d.entries.length} entries`)}catch(err){toast('That file could not be read')}e.target.value=''};
+$('#wipe').onclick=()=>{openSheet(`<h2 id="sheetTitle">Erase everything?</h2><p class="sub">All entries and settings on this phone will be deleted. This can't be undone.</p><div class="btns" style="margin-top:12px"><button class="btn secondary" id="wNo">Cancel</button><button class="btn danger" id="wYes">Erase</button></div>`);$('#wNo').onclick=closeSheet;$('#wYes').onclick=()=>{localStorage.removeItem(KEY);load();closeSheet();render()}};
+
+load();
+if(S.onboarded)show('today');else render();
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
