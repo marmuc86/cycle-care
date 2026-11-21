@@ -26,6 +26,9 @@ Updating dates: tap **Period started today** on Today, **＋ Add** in Log, or ta
 | Clarity and reliability for real-life decisions (Watch Duty, ADA 2025 Social Impact) | Says where each estimate comes from and how sure it is |
 | Modern iOS look (Liquid Glass, ADA 2026) | Translucent cards and floating tab bar, light and dark mode |
 
+## Phase explanations
+Tap any phase name (legend, the button under the ring, or the phase in a calendar day) for a pop-up: what's happening hormonally, how she may feel, desire tendency, and how to help. Desire info reflects research that desire tends to peak around ovulation for many people; it is shown as a tendency, and her cues and consent come first.
+
 ## How estimates work
 - A "P Tag 1" entry is a logged period start. A "Tag N" entry implies a start N−1 days earlier.
 - Cycle length = average of the last 6 gaps between starts (gaps over 45 days are treated as missing data).
@@ -40,6 +43,7 @@ Updating dates: tap **Period started today** on Today, **＋ Add** in Log, or ta
 | Day 2 | Cosy-night idea (🌑 Cosy night) | Slow evening she chooses; company or space, her call |
 | After the period | Energy often lifts now (🌒 Plan something new) | Suggest something active or new together |
 | ~3 days before ovulation | Date-night window (🌕 Date night) | Book a proper date in the next few days |
+| Day before ovulation | Desire often peaks now (🕯️ Time for two) | Unhurried time together; read her cues; most fertile time |
 | ~3 days after ovulation | Slower days ahead (🌖 Easy evenings) | Relaxed plans, good food, a few extra chores |
 | 5 days before next period | Extra-kindness days (🌘 Extra kindness) | Patience, no big stressful plans, just be there |
 

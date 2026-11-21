@@ -67,7 +67,14 @@ p{margin:.3rem 0}
 .ringcenter .big{font-size:2.6rem;font-weight:750;letter-spacing:-.03em;line-height:1}
 .ringcenter .moon{font-size:1.6rem;line-height:1.2}
 .legend{display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:center;font-size:.8rem;color:var(--muted);margin-top:4px}
-.legend span{display:inline-flex;align-items:center;gap:4px}
+.legend span,.legend button{display:inline-flex;align-items:center;gap:4px}
+.legend button{border:0;background:transparent;color:inherit;padding:6px 4px;min-height:32px;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+.meter{display:inline-flex;gap:3px;vertical-align:middle;margin-right:6px}
+.meter i{width:8px;height:16px;border-radius:3px;background:color-mix(in srgb,var(--accent) 18%,transparent)}
+.meter i.on{background:var(--accent)}
+.info h3{font-size:1rem;margin:14px 0 4px}
+.info p{margin:0}
+.pillbtn{cursor:pointer}
 .sw{width:10px;height:10px;border-radius:3px;display:inline-block}
 .ideas{margin:0;padding:0;list-style:none}
 .ideas li{display:flex;gap:10px;padding:.55rem 0;border-top:1px solid var(--stroke)}
@@ -159,8 +166,10 @@ textarea.field{min-height:9rem;font-family:ui-monospace,Menlo,monospace;font-siz
   <section class="card" aria-label="Cycle overview">
     <div class="ringbox" id="ring"></div>
     <div class="legend" id="legend"></div>
+    <button class="btn secondary block" id="phaseInfoBtn" style="margin-top:12px"></button>
   </section>
   <section class="card" id="nextCard"></section>
+  <section class="card" id="desireCard"></section>
   <div class="btns">
     <button class="btn" id="qPeriod">🌑 Period started today</button>
     <button class="btn secondary" id="qAdd">＋ Add entry</button>
@@ -274,6 +283,14 @@ const PH={
   luteal:{name:'Luteal',moon:'🌖',color:'--luteal'},
   pre:{name:'Pre-period',moon:'🌘',color:'--pre'}
 };
+const DESIRE={menstrual:[1,'Often lower'],follicular:[2,'Rising'],ovulatory:[3,'Often highest'],luteal:[2,'Settling'],pre:[1,'Varies a lot']};
+const INFO={
+  menstrual:{when:'Cycle days 1 to about 5',what:'Estrogen and progesterone are at their lowest and the lining of the uterus sheds. A period usually lasts 3 to 7 days.',feel:'Cramps, lower back pain, headaches and low energy are common, especially on days 1 and 2. Many people feel noticeably better from about day 3.',desire:'Often lower at the start. Some people feel more desire towards the end of their period, and some enjoy closeness throughout. Follow her lead completely.',help:'Warmth, rest, food she likes, fewer obligations. Offer, don\'t push.'},
+  follicular:{when:'From the end of the period until a few days before ovulation',what:'Estrogen rises steadily while an egg matures in the ovary. This is the part of the cycle whose length varies most, which is why cycle lengths differ.',feel:'Energy, mood, focus and confidence often lift. Many people feel more outgoing and up for new things.',desire:'Usually builds through this phase as estrogen climbs.',help:'Plan activities, trips and new experiences together. A good time for bigger conversations too.'},
+  ovulatory:{when:'About 14 days before the next period (estimated)',what:'Estrogen peaks and a surge of LH releases the egg. Testosterone rises a little too. The fertile window is roughly the 5 days before ovulation plus the day itself.',feel:'Many people feel at their most energetic, social and attractive. Some notice a brief one-sided twinge (mittelschmerz) or more cervical fluid.',desire:'Often at its highest. Studies consistently find that sexual desire tends to peak around ovulation for many people, likely driven by the estrogen and testosterone peak. It is a tendency, not a rule: stress, sleep, the pill and simply how she feels matter more.',help:'Make time for each other: a proper date, an unhurried evening, phones away. Important: this is also when pregnancy is most likely. Use reliable contraception; this app cannot tell you safe days.'},
+  luteal:{when:'From just after ovulation until about 5 days before the period',what:'Progesterone rises, which has a calming and sometimes sleepy effect. Body temperature is slightly higher.',feel:'Energy is often steadier or a bit lower. Cravings and wanting cosy, quieter time are common.',desire:'Often settles down after the ovulation peak. Some people notice a smaller second rise in the middle of this phase.',help:'Relaxed plans, good food, earlier nights, a bit of extra help at home.'},
+  pre:{when:'The last ~5 days before the next period',what:'If there is no pregnancy, estrogen and progesterone drop. That drop is what can cause premenstrual symptoms (PMS).',feel:'Bloating, sore breasts, tiredness, irritability, sadness or anxiety are common to some degree. How strong this is varies a lot from person to person and month to month.',desire:'Varies a lot: lower for many, while others notice more desire just before their period. Ask, don\'t assume.',help:'Patience, comfort food, fewer big plans. Never put her feelings down to "hormones"; just be there.'}
+};
 function phaseOf(day,L,P,lut){
   const O=L-lut+1; // cycle day of ovulation (1-based): next period starts lut days after it
   if(day<=P) return 'menstrual';
@@ -350,7 +367,7 @@ function dayInfo(M,n){
 const IDEAS={
   menstrual:[['🫖','Offer comfort without making a fuss: tea, a hot-water bottle, her favourite snack.'],['🛋️','Suggest a cosy night in, and let her choose the film or the takeaway.'],['🧺','Quietly take a chore or two off her list.'],['💬','Ask "What would feel good today?" Some days she may want company, some days space.']],
   follicular:[['🥾','Energy often picks up now. Suggest something active or new together.'],['🗓️','Good week to plan ahead: book a trip, a concert or a dinner.'],['💡','Ask about her goals and plans. This can be a great time for bigger conversations.']],
-  ovulatory:[['🍷','Classic date-night window: many people feel most social and confident around mid-cycle.'],['💐','Small romantic gestures land well: flowers, a note, a surprise plan.'],['⚠️','The fertile window is only an estimate. Never rely on this app for contraception.']],
+  ovulatory:[['🍷','Classic date-night window: many people feel most social and confident around mid-cycle.'],['🔥','Desire often peaks around ovulation. Make unhurried time for each other, and let her lead.'],['💐','Small romantic gestures land well: flowers, a note, a surprise plan.'],['⚠️','The fertile window is only an estimate. Never rely on this app for contraception.']],
   luteal:[['🍲','Lean towards relaxed plans, good food and earlier nights.'],['🤝','Pick up a little extra at home, without making it a thing.'],['🎧','Plan calmer dates: a walk, a cooking night, a series together.']],
   pre:[['💛','Some people feel tired, crampy or more sensitive before a period. Extra patience goes a long way.'],['🍫','Stock up on comforts she likes before her period starts.'],['🚫','Skip "is it hormones?" Just be kind and listen.'],['🗓️','Keep the next few days flexible and avoid scheduling big stressful things.']]
 };
@@ -368,7 +385,8 @@ function reminderPlan(M){
       add(s+1,'cosy','Cosy-night idea','🌑 Cosy night',`Offer a slow evening: her favourite takeaway, a film she picks, a hot-water bottle. Let ${her()} decide. Some days she may want company, some days space.`);
     }
     add(s+P+1,'energy','Energy often lifts now','🌒 Plan something new',`For many people energy and curiosity rise after a period. A good week to suggest something new together: a hike, a class, a day trip.`);
-    add(s+O-3,'date','Date-night window','🌕 Date night',`Around mid-cycle many people feel especially social and confident. Plan a proper date in the next few days. (Estimate. Not a fertility or contraception guide.)`);
+    add(s+O-4,'date','Date-night window','🌕 Date night',`Around mid-cycle many people feel especially social and confident. Plan a proper date in the next few days. (Estimate. Not a fertility or contraception guide.)`);
+    add(s+O-2,'desire','Desire often peaks now','🕯️ Time for two',`For many people desire tends to be highest around ovulation, which is roughly the next 2–3 days by estimate. Make unhurried time for each other, phones away. Read her cues: a tendency, not a guarantee. This is also the most fertile time.`);
     add(s+O+3,'slow','Slower days ahead','🌖 Easy evenings',`Energy can dip in the second half of the cycle. Lean towards relaxed plans, good food and early nights, and pick up a few extra chores.`);
     add(nextStart-5,'kind','Extra-kindness days','🌘 Extra kindness',`The days before a period can bring tiredness, cramps or a shorter fuse for some people. Be patient, keep big stressful plans off the calendar, and just be there.`);
   });
@@ -403,7 +421,19 @@ function parseNotes(text,year){
 /* ---------- UI helpers ---------- */
 const $=s=>document.querySelector(s);
 function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),2400)}
-function legend(el){el.innerHTML=Object.values(PH).map(p=>`<span><i class="sw" style="background:var(${p.color})"></i>${p.moon} ${p.name}</span>`).join('')}
+function legend(el){el.innerHTML=Object.entries(PH).map(([k,p])=>`<button type="button" data-phase="${k}" aria-label="About the ${p.name} phase"><i class="sw" style="background:var(${p.color})"></i>${p.moon} ${p.name}</button>`).join('')}
+const meter=n=>`<span class="meter" aria-hidden="true">${[1,2,3].map(i=>`<i class="${i<=n?'on':''}"></i>`).join('')}</span>`;
+function phaseInfo(k){const p=PH[k],i=INFO[k],d=DESIRE[k];
+  openSheet(`<div class="row spread"><h2 id="sheetTitle" style="margin:0">${p.moon} ${p.name}</h2><button class="btn ghost" id="piClose">Done</button></div>
+  <div class="info"><p class="sub">${esc(i.when)}</p>
+  <h3>What's happening</h3><p>${esc(i.what)}</p>
+  <h3>How she may feel</h3><p>${esc(i.feel)}</p>
+  <h3>Desire: ${meter(d[0])}${esc(d[1])}</h3><p>${esc(i.desire)}</p>
+  <h3>How you can help</h3><p>${esc(i.help)}</p>
+  <p class="note" style="margin-top:14px">General patterns from research. Every person and every cycle is different, and her own cues and consent always come first.</p></div>
+  <div class="btns" style="margin-top:14px">${Object.keys(PH).filter(x=>x!==k).map(x=>`<button class="btn secondary" data-phase="${x}">${PH[x].moon} ${PH[x].name}</button>`).join('')}</div>`);
+  $('#piClose').onclick=closeSheet;}
+document.addEventListener('click',ev=>{const b=ev.target.closest('[data-phase]');if(b){ev.preventDefault();phaseInfo(b.dataset.phase)}});
 const typeLabel=e=>e.type==='period'?'Period started':e.type==='ovulation'?'Ovulation':e.type==='day'?`Cycle day ${e.day}`:'Note';
 const typeIcon=e=>({period:'🌑',ovulation:'🌕',day:'📍',note:'✏️'})[e.type];
 
@@ -441,6 +471,12 @@ function renderToday(M){
   $('#nextCard').innerHTML=`<div class="row spread"><div><div class="sub">Next period, roughly</div><div style="font-size:1.5rem;font-weight:700">${fmt(toS(next),{weekday:'short',day:'numeric',month:'short'})}<span class="guess">estimate</span></div>
     <div class="sub">${until>0?`in about ${until} day${until>1?'s':''}`:until===0?'around today':`${-until} day${until<-1?'s':''} later than expected. Did it start?`} · likely between ${fmt(toS(next-spread))} and ${fmt(toS(next+spread))}</div></div></div>
     <p class="note" style="margin-top:8px">Based on ${esc(M.basis)}. ${M.lens.length} cycles logged, average ${M.mean.toFixed(1)} days (range ${Math.min(...M.lens)||'–'}–${Math.max(...M.lens)||'–'}).${c.startEst?' The start of this cycle is a guess: if you know when her last period began, add it in Log.':''}</p>`;
+  $('#phaseInfoBtn').textContent=`ⓘ What happens in the ${p.name.toLowerCase()} phase`;$('#phaseInfoBtn').dataset.phase=info.phase;
+  const d=DESIRE[info.phase];
+  let peak=null;for(let n=M.T;n<M.T+45;n++){const di=dayInfo(M,n);if(di&&di.phase==='ovulatory'){peak=n;break}}
+  $('#desireCard').innerHTML=`<div class="row spread"><h2 style="margin:0">Desire</h2><button class="btn ghost" data-phase="${info.phase}">Why ›</button></div>
+    <p style="margin-top:6px"><b>${meter(d[0])}${esc(d[1])}</b> <span class="sub">in this phase, for many people</span></p>
+    <p class="sub">${info.phase==='ovulatory'?'Desire tends to peak around now. Make time for each other, and let her lead.':peak?`Desire often peaks around ovulation, next estimated around <b>${fmt(toS(peak))}–${fmt(toS(peak+4))}</b>.`:''} Her cues and consent always come first.</p>`;
   $('#ideasTitle').textContent=`Ideas for the ${p.name.toLowerCase()} phase`;
   $('#ideas').innerHTML=IDEAS[info.phase].map(([i,t])=>`<li><span class="ico" aria-hidden="true">${i}</span><span>${esc(t)}</span></li>`).join('');
   const R=reminderPlan(M).slice(0,4);
@@ -522,7 +558,7 @@ function editEntry(id,presetDate){
 function dayDetail(s){
   const M=model(), info=dayInfo(M,toN(s)), ents=S.entries.filter(e=>e.date===s);
   openSheet(`<div class="row spread"><h2 id="sheetTitle" style="margin:0">${fmtLong(s)}</h2><button class="btn ghost" id="dClose">Done</button></div>
-   ${info?`<p><span class="pill">${PH[info.phase].moon} ${PH[info.phase].name}</span> <span class="sub">cycle day ${info.day}</span>${info.c.future||info.c.startEst?'<span class="guess">estimate</span>':''}</p>
+   ${info?`<p><button class="pill pillbtn" data-phase="${info.phase}" aria-label="About the ${PH[info.phase].name} phase">${PH[info.phase].moon} ${PH[info.phase].name} ⓘ</button> <span class="sub">cycle day ${info.day}</span>${info.c.future||info.c.startEst?'<span class="guess">estimate</span>':''}</p>
    <ul class="ideas">${IDEAS[info.phase].slice(0,2).map(([i,t])=>`<li><span class="ico" aria-hidden="true">${i}</span><span>${esc(t)}</span></li>`).join('')}</ul>`:'<p class="sub">No cycle data around this day.</p>'}
    <div style="margin-top:8px">${ents.map(e=>`<button class="entry" data-id="${e.id}"><span class="badge" aria-hidden="true">${typeIcon(e)}</span><span class="meta"><b>${typeLabel(e)}</b>${e.note?` · ${esc(e.note)}`:''}</span><span class="chev">Edit ›</span></button>`).join('')}</div>
    <button class="btn block" id="dAdd" style="margin-top:12px">＋ Add entry on this day</button>`);
